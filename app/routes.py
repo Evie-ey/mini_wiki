@@ -30,16 +30,18 @@ def add_document():
 
 @app.route('/api/v1/search/<search_word>', methods=['GET'])
 def search_document(search_word):
-
-    print(search_word)
+    search_words = request.args
+    removed_stop_word = helper_function.remove_stop_words(search_word).strip(" ")
+    update_search_word = removed_stop_word if removed_stop_word else " "
+    print(update_search_word, "hhhh", search_words)
 
     related_results = db.session.query(models.Document)\
     .select_from(models.Document)\
     .join(models.document_tag)\
     .join(models.Tag)\
-    .filter(and_(models.Tag.tag_text == search_word, \
-              (and_(models.Document.body.notlike("%{0}%".format(search_word)), \
-                  models.Document.title.notlike("%{0}%".format(search_word))))))\
+    .filter(and_(models.Tag.tag_text == update_search_word, \
+              (and_(models.Document.body.notlike("%{0}%".format(update_search_word)), \
+                  models.Document.title.notlike("%{0}%".format(update_search_word))))))\
                 .all()
     documents_schema = models.DocumentSchema(many=True)
     refined_related_results = documents_schema.dump(related_results)
@@ -53,7 +55,7 @@ def search_document(search_word):
     .select_from(models.Document)\
     .join(models.document_tag)\
     .join(models.Tag)\
-    .filter(or_(models.Document.body.like("%{0}%".format(search_word)), models.Document.title.like("%{0}%".format(search_word))))\
+    .filter(or_(models.Document.body.like("%{0}%".format(update_search_word)), models.Document.title.like("%{0}%".format(update_search_word))))\
     .all()
     documents_schema = models.DocumentSchema(many=True)
     refined_results = documents_schema.dump(results)
@@ -61,10 +63,16 @@ def search_document(search_word):
 
     return jsonify({"matched_documents": refined_results, "related_documents": refined_related_results})
 
+@app.route('/api/v1/documents/<documents_slug>', methods=['GET'])
+def get_document_slug(documents_slug):
+    doc_slug = helper_function.make_document_slug(documents_slug)
+    return jsonify({"document-slug": doc_slug})
 
 @app.route('/api/v1/documents', methods=['GET'])
 def get_documents():
     documents = models.Document.query.all()
     documents_schema = models.DocumentSchema(many=True)
     return jsonify(documents_schema.dump(documents))
+
+names = ["Elena", "Eve", "Ulises", "Caio", "David"]
 
