@@ -1,8 +1,9 @@
 from pydoc import doc
 from flask import jsonify, request, make_response
+from sqlalchemy import and_, or_
 from app import app
 from app import db
-from app import models
+from app import models, helper_function
 
 document_list = []
 
@@ -29,18 +30,36 @@ def add_document():
 
 @app.route('/api/v1/search/<search_word>', methods=['GET'])
 def search_document(search_word):
-    matched_documents = []
-    related_documents = []
+
     print(search_word)
+
+    related_results = db.session.query(models.Document)\
+    .select_from(models.Document)\
+    .join(models.document_tag)\
+    .join(models.Tag)\
+    .filter(and_(models.Tag.tag_text == search_word, \
+              (and_(models.Document.body.notlike("%{0}%".format(search_word)), \
+                  models.Document.title.notlike("%{0}%".format(search_word))))))\
+                .all()
+    documents_schema = models.DocumentSchema(many=True)
+    refined_related_results = documents_schema.dump(related_results)
+    helper_function.format_tags(refined_related_results)
+
+#     session.query(tbl_member) \
+#   .filter(and_(models.Tag.tag_text == search_word, \
+#               (or_(models.Document.body.notlike("%{0}%".format(search_word)),models.Document.title.like("%{0}%".format(search_word))))))
 
     results = db.session.query(models.Document)\
     .select_from(models.Document)\
     .join(models.document_tag)\
     .join(models.Tag)\
-    .filter(models.Tag.tag_text == search_word)\
+    .filter(or_(models.Document.body.like("%{0}%".format(search_word)), models.Document.title.like("%{0}%".format(search_word))))\
     .all()
     documents_schema = models.DocumentSchema(many=True)
-    return jsonify(documents_schema.dump(results))
+    refined_results = documents_schema.dump(results)
+    helper_function.format_tags(refined_results)
+
+    return jsonify({"matched_documents": refined_results, "related_documents": refined_related_results})
 
 
 @app.route('/api/v1/documents', methods=['GET'])
@@ -48,3 +67,4 @@ def get_documents():
     documents = models.Document.query.all()
     documents_schema = models.DocumentSchema(many=True)
     return jsonify(documents_schema.dump(documents))
+
