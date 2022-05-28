@@ -13,6 +13,7 @@ document_tag = db.Table('documnet_tag',
 class Document(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(600))
+    slug_title = db.Column(db.String(600))
     body = db.Column(db.TEXT())
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     tags = db.relationship('Tag', secondary=document_tag, backref='docs')
