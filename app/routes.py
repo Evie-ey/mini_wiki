@@ -4,12 +4,12 @@ from sqlalchemy import and_, or_
 from app import app
 from app import db
 from app import models, helper_function
-from slugify import slugify
+# from slugify import slugify
 
 # This endpoint creates a new document
 
 
-@app.route('/api/v1/index', methods=['POST'])
+@app.route('/api/v1/documents/index', methods=['POST'])
 def add_document():
     if invalid_document(request.json):
         return jsonify({'error': 'Invalid input or missing value'}), 404
@@ -61,7 +61,7 @@ def invalid_document(document_request):
 
 
 # This endpoint searches for keywords in the document body/title or tags
-@app.route('/api/v1/search/', methods=['GET'])
+@app.route('/api/v1/documents/search/', methods=['GET'])
 def search_document():
     searchTerm = request.args.get('search_term')
     if not searchTerm:
@@ -107,8 +107,6 @@ def search_document():
 @app.route('/api/v1/documents/<document_slug>', methods=['GET'])
 def get_document_slug(document_slug):
 
-    print(check_slug(document_slug), "checking this")
-
     if (check_slug(document_slug) != document_slug):
         return jsonify({'error': 'You need to enter a slug title'})
 
@@ -141,3 +139,6 @@ def get_documents():
     all_documents = documents_schema.dump(documents)
     helper_function.format_tags(all_documents)
     return jsonify(all_documents)
+
+
+	
