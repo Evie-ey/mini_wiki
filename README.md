@@ -54,7 +54,7 @@ This is a step by step process of how to get a development environment running.
 4. Install all project dependencies using pip install -r requirements.txt
 ## Set environement variables
 1. Create .flaskenv file and add this.
-  *FLASK_APP=mini_wiki.py*
+  *FLASK_APP=mini_wiki.py* , 
   *FLASK_ENV=development*
  Run the application using pyhton mini_wiki.py
 
