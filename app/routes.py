@@ -108,7 +108,7 @@ def search_document():
 def get_document_slug(document_slug):
 
     if (check_slug(document_slug) != document_slug):
-        return jsonify({'error': 'You need to enter a slug title'})
+        return jsonify({'error': 'You need to enter a slug title'}), 400
 
     slug_doc = document_slug.replace('-',' ')
     doc_slug = helper_function.make_document_slug(slug_doc).strip(" ").lower()
@@ -141,4 +141,3 @@ def get_documents():
     return jsonify(all_documents)
 
 
-	
